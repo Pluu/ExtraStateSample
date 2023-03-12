@@ -5,7 +5,7 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.os.bundleOf
-import com.pluu.savedstate.sample.databinding.ActivityStateBinding
+import com.pluu.savedstate.databinding.ActivityStateBinding
 import com.pluu.savedstate.sample.model.SampleModel
 import com.pluu.utils.extra.ExtraStateful
 import com.pluu.utils.extra.extraStateful

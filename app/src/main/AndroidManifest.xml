@@ -3,20 +3,20 @@
     xmlns:tools="http://schemas.android.com/tools">
 
     <application
-        android:name=".SampleApp"
+        android:name=".sample.SampleApp"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:supportsRtl="true"
         android:theme="@style/Theme.SavedStateSample"
         tools:targetApi="31">
         <activity
-            android:name=".FragmentStateActivity"
+            android:name=".sample.FragmentStateActivity"
             android:exported="false" />
         <activity
-            android:name=".ActivityStateActivity"
+            android:name=".sample.ActivityStateActivity"
             android:exported="false" />
         <activity
-            android:name=".MainActivity"
+            android:name=".sample.MainActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

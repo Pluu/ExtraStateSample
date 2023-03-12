@@ -6,7 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
-import com.pluu.savedstate.sample.databinding.FragmentMainBinding
+import com.pluu.savedstate.databinding.FragmentMainBinding
 import com.pluu.savedstate.sample.model.SampleModel
 import com.pluu.utils.extra.ExtraStateful
 import com.pluu.utils.extra.extraStateful

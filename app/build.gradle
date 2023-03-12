@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace 'com.pluu.savedstate.sample'
+    namespace 'com.pluu.savedstate'
     compileSdk 33
 
     defaultConfig {
-        applicationId "com.pluu.savedstate.sample"
+        applicationId "com.pluu.savedstate"
         minSdk 24
         targetSdk 33
         versionCode 1

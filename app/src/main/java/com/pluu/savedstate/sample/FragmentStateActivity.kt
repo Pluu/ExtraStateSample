@@ -2,6 +2,7 @@ package com.pluu.savedstate.sample
 
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import com.pluu.savedstate.R
 
 class FragmentStateActivity : AppCompatActivity() {
 

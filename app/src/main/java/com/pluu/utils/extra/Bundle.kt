@@ -1,4 +1,4 @@
-package com.pluu.utils
+package com.pluu.utils.extra
 
 import android.os.Bundle
 import android.os.Parcelable
