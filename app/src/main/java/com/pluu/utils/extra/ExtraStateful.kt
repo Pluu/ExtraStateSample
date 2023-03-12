@@ -27,21 +27,21 @@ interface ExtraStateful {
 }
 
 fun extraStateful(): ExtraStateful = object : ExtraStateful {
-    private val consumeKey = mutableSetOf<String>()
-    private val bundle = Bundle()
+    private val propertyKey = mutableSetOf<String>()
+    private val extras = mutableMapOf<String, Any?>()
 
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any> extra(): PropertyDelegateProvider<Any, ReadWriteProperty<Any, T>> =
         PropertyDelegateProvider { _, property ->
-            consumeKey.add(property.name)
+            propertyKey.add(property.name)
             ExtraDelegate(
                 getter = { key ->
-                    checkNotNull(bundle.get(key) as T) {
+                    checkNotNull(extras[key] as T) {
                         "Property $key could not be read"
                     }
                 },
                 setter = { key, value ->
-                    bundle.put(key, value)
+                    extras[key] = value
                 }
             )
         }
@@ -49,39 +49,39 @@ fun extraStateful(): ExtraStateful = object : ExtraStateful {
     @Suppress("UNCHECKED_CAST")
     override fun <T : Any?> extraNullable(): PropertyDelegateProvider<Any, ReadWriteProperty<ExtraStateful, T?>> =
         PropertyDelegateProvider { _, property ->
-            consumeKey.add(property.name)
+            propertyKey.add(property.name)
             ExtraDelegate(
                 getter = { key ->
-                    bundle.get(key) as? T
+                    extras[key] as? T
                 },
                 setter = { key, value ->
-                    bundle.put(key, value)
+                    extras[key] = value
                 }
             )
         }
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     override fun restore(defaultState: Bundle?, restoredState: Bundle?) {
-        bundle.clear()
+        extras.clear()
         if (defaultState != null) {
-            consumeKey.forEach { key ->
+            propertyKey.forEach { key ->
                 if (defaultState.containsKey(key)) {
-                    bundle.put(key, defaultState.get(key))
+                    extras[key] = defaultState.get(key)
                 }
             }
         }
         if (restoredState != null) {
-            consumeKey.forEach { key ->
+            propertyKey.forEach { key ->
                 if (restoredState.containsKey(key)) {
-                    bundle.put(key, restoredState.get(key))
+                    extras[key] = restoredState.get(key)
                 }
             }
         }
     }
 
     override fun save(state: Bundle) {
-        consumeKey.forEach { key ->
-            state.put(key, bundle.get(key))
+        propertyKey.forEach { key ->
+            state.put(key, extras[key])
         }
     }
 
