@@ -1,6 +1,7 @@
 package com.pluu.utils.extra
 
 import android.os.Bundle
+import com.pluu.utils.extra.ExtraStateful.Companion.KEY_EXTRA_STATEFUL
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -23,9 +24,14 @@ interface ExtraStateful {
      * Get all registered property values and put them on the input bundle
      */
     fun save(state: Bundle)
+
+    companion object {
+        const val KEY_EXTRA_STATEFUL = "KEY_EXTRA_STATEFUL"
+    }
 }
 
 fun extraStateful(): ExtraStateful = object : ExtraStateful {
+    private val restoreKey = mutableSetOf<String>()
     private val bundle = Bundle()
 
     @Suppress("UNCHECKED_CAST")
@@ -37,6 +43,7 @@ fun extraStateful(): ExtraStateful = object : ExtraStateful {
                 }
             },
             setter = { key, value ->
+                restoreKey.add(key)
                 bundle.put(key, value)
             }
         )
@@ -49,6 +56,7 @@ fun extraStateful(): ExtraStateful = object : ExtraStateful {
                 bundle.get(key) as? T
             },
             setter = { key, value ->
+                restoreKey.add(key)
                 bundle.put(key, value)
             }
         )
@@ -61,12 +69,16 @@ fun extraStateful(): ExtraStateful = object : ExtraStateful {
             bundle.putAll(defaultState)
         }
         if (restoredState != null) {
+            restoreKey.addAll(restoredState.getStringArray(KEY_EXTRA_STATEFUL).orEmpty())
             bundle.putAll(restoredState)
         }
     }
 
     override fun save(state: Bundle) {
-        state.putAll(bundle)
+        state.putStringArray(KEY_EXTRA_STATEFUL, restoreKey.toTypedArray())
+        restoreKey.forEach { key ->
+            state.put(key, bundle.get(key))
+        }
     }
 
     private inner class ExtraDelegate<T>(
