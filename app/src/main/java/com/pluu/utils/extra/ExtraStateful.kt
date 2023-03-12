@@ -1,7 +1,7 @@
 package com.pluu.utils.extra
 
 import android.os.Bundle
-import com.pluu.utils.extra.ExtraStateful.Companion.KEY_EXTRA_STATEFUL
+import kotlin.properties.PropertyDelegateProvider
 import kotlin.properties.ReadWriteProperty
 import kotlin.reflect.KProperty
 
@@ -11,9 +11,9 @@ interface ExtraStateful {
      * The following methods register properties to be restored / saved during calls
      * to restore() / state()
      */
-    fun <T : Any> extra(): ReadWriteProperty<ExtraStateful, T>
+    fun <T : Any> extra(): PropertyDelegateProvider<ExtraStateful, ReadWriteProperty<ExtraStateful, T>>
 
-    fun <T : Any?> extraNullable(): ReadWriteProperty<ExtraStateful, T?>
+    fun <T : Any?> extraNullable(): PropertyDelegateProvider<ExtraStateful, ReadWriteProperty<ExtraStateful, T?>>
 
     /**
      * Set all registered properties to values from the input bundle
@@ -24,59 +24,63 @@ interface ExtraStateful {
      * Get all registered property values and put them on the input bundle
      */
     fun save(state: Bundle)
-
-    companion object {
-        const val KEY_EXTRA_STATEFUL = "KEY_EXTRA_STATEFUL"
-    }
 }
 
 fun extraStateful(): ExtraStateful = object : ExtraStateful {
-    private val restoreKey = mutableSetOf<String>()
+    private val consumeKey = mutableSetOf<String>()
     private val bundle = Bundle()
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Any> extra(): ReadWriteProperty<Any, T> {
-        return ExtraDelegate(
-            getter = { key ->
-                checkNotNull(bundle.get(key) as T) {
-                    "Property $key could not be read"
+    override fun <T : Any> extra(): PropertyDelegateProvider<Any, ReadWriteProperty<Any, T>> =
+        PropertyDelegateProvider { _, property ->
+            consumeKey.add(property.name)
+            ExtraDelegate(
+                getter = { key ->
+                    checkNotNull(bundle.get(key) as T) {
+                        "Property $key could not be read"
+                    }
+                },
+                setter = { key, value ->
+                    bundle.put(key, value)
                 }
-            },
-            setter = { key, value ->
-                restoreKey.add(key)
-                bundle.put(key, value)
-            }
-        )
-    }
+            )
+        }
 
     @Suppress("UNCHECKED_CAST")
-    override fun <T : Any?> extraNullable(): ReadWriteProperty<ExtraStateful, T?> {
-        return ExtraDelegate(
-            getter = { key ->
-                bundle.get(key) as? T
-            },
-            setter = { key, value ->
-                restoreKey.add(key)
-                bundle.put(key, value)
-            }
-        )
-    }
+    override fun <T : Any?> extraNullable(): PropertyDelegateProvider<Any, ReadWriteProperty<ExtraStateful, T?>> =
+        PropertyDelegateProvider { _, property ->
+            consumeKey.add(property.name)
+            ExtraDelegate(
+                getter = { key ->
+                    bundle.get(key) as? T
+                },
+                setter = { key, value ->
+                    bundle.put(key, value)
+                }
+            )
+        }
 
     @Suppress("PARAMETER_NAME_CHANGED_ON_OVERRIDE")
     override fun restore(defaultState: Bundle?, restoredState: Bundle?) {
         bundle.clear()
         if (defaultState != null) {
-            bundle.putAll(defaultState)
+            consumeKey.forEach { key ->
+                if (defaultState.containsKey(key)) {
+                    bundle.put(key, defaultState.get(key))
+                }
+            }
         }
         if (restoredState != null) {
-            restoreKey.addAll(restoredState.getStringArray(KEY_EXTRA_STATEFUL).orEmpty())
-            bundle.putAll(restoredState)
+            consumeKey.forEach { key ->
+                if (restoredState.containsKey(key)) {
+                    bundle.put(key, restoredState.get(key))
+                }
+            }
         }
     }
 
     override fun save(state: Bundle) {
-        state.putStringArray(KEY_EXTRA_STATEFUL, restoreKey.toTypedArray())
-        restoreKey.forEach { key ->
+        consumeKey.forEach { key ->
             state.put(key, bundle.get(key))
         }
     }
