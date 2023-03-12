@@ -1,12 +1,16 @@
 package com.pluu.utils.extra.test
 
 import android.os.Bundle
-import androidx.activity.ComponentActivity
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.fragment.app.Fragment
 import com.pluu.savedstate.sample.model.SampleModel
 import com.pluu.utils.extra.ExtraStateful
 import com.pluu.utils.extra.extraStateful
 
-class ExtraTestActivity : ComponentActivity(), ExtraStateful by extraStateful() {
+class ExtraTestFragment : Fragment(), ExtraStateful by extraStateful() {
 
     val extraNonNull by extra<String>()
     val arrayListCase by extra<ArrayList<String>>()
@@ -21,9 +25,17 @@ class ExtraTestActivity : ComponentActivity(), ExtraStateful by extraStateful() 
     var mutableArrayListCase by extra<List<String>>()
     var mutableSerializableCase by extra<SampleModel>()
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        restore(intent?.extras, savedInstanceState)
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        return FrameLayout(layoutInflater.context)
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        restore(arguments, savedInstanceState)
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
